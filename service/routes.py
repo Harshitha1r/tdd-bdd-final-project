@@ -105,7 +105,24 @@ def create_products():
 ######################################################################
 # R E A D   A   P R O D U C T
 ######################################################################
+######################################################################
+# READ A PRODUCT
+######################################################################
+@app.route("/products/<int:product_id>", methods=["GET"])
+def get_products(product_id):
+    """
+    Retrieve a single Product
 
+    This endpoint will return a Product based on it's id
+    """
+    app.logger.info("Request to Retrieve a product with id [%s]", product_id)
+
+    product = Product.find(product_id)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+
+    app.logger.info("Returning product: %s", product.name)
+    return product.serialize(), status.HTTP_200_OK
 #
 # PLACE YOUR CODE HERE TO READ A PRODUCT
 #
@@ -113,7 +130,20 @@ def create_products():
 ######################################################################
 # U P D A T E   A   P R O D U C T
 ######################################################################
+    def test_update_product(self):
+        """It should Update an existing Product"""
+        # create a product to update
+        test_product = ProductFactory()
+        response = self.client.post(BASE_URL, json=test_product.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        # update the product
+        new_product = response.get_json()
+        new_product["description"] = "unknown"
+        response = self.client.put(f"{BASE_URL}/{new_product['id']}", json=new_product)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_product = response.get_json()
+        self.assertEqual(updated_product["description"], "unknown")
 #
 # PLACE YOUR CODE TO UPDATE A PRODUCT HERE
 #
@@ -121,7 +151,23 @@ def create_products():
 ######################################################################
 # D E L E T E   A   P R O D U C T
 ######################################################################
+######################################################################
+# DELETE A PRODUCT
+######################################################################
+@app.route("/products/<int:product_id>", methods=["DELETE"])
+def delete_products(product_id):
+    """
+    Delete a Product
 
+    This endpoint will delete a Product based the id specified in the path
+    """
+    app.logger.info("Request to Delete a product with id [%s]", product_id)
+
+    product = Product.find(product_id)
+    if product:
+        product.delete()
+
+    return "", status.HTTP_204_NO_CONTENT
 
 #
 # PLACE YOUR CODE TO DELETE A PRODUCT HERE
